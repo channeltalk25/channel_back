@@ -1,7 +1,7 @@
 from schemas.question_answer import QuestionAnswerList, QuestionAnswer
 from schemas.cluster_result import ClusterResult
-from app.service.utils import build_llm_input
-from prompts.loader import CLUSTERER_PROMPT
+from app.service.utils import build_clusterer_input
+from prompts import loader
 from core.llm import llm
 
 def extract_qa_pairs(chat_data: list[dict]) -> QuestionAnswerList:
@@ -83,11 +83,11 @@ def extract_qa_pairs(chat_data: list[dict]) -> QuestionAnswerList:
 async def get_clusters(chat_data : list[dict]):
 
     question_answer_list : QuestionAnswerList = extract_qa_pairs(chat_data)
-
-    input = build_llm_input(question_answer_list, CLUSTERER_PROMPT)
     
-    operator_with_schema = llm.with_structured_output(ClusterResult)
+    input = build_clusterer_input(question_answer_list, loader.CLUSTERER_PROMPT)
+    
+    clusterer = llm.with_structured_output(ClusterResult)
 
-    output = await operator_with_schema.ainvoke(input)
+    output = await clusterer.ainvoke(input)
 
     return output

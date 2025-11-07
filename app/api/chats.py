@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from typing import Optional
-from app.service.user_chats import get_all_user_chat_messages
+from app.service.chats import get_all_user_chat_messages
 
 router = APIRouter(prefix="/user-chats", tags=["User Chats"])
 

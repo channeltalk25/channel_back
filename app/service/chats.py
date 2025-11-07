@@ -1,6 +1,5 @@
 from aiohttp import ClientSession
 from core.http import get_http_session
-from app.service.managers import get_manager_name
 import asyncio
 
 async def get_user_chatIds(http_session : ClientSession, since: str) -> list[str]:
@@ -45,14 +44,6 @@ async def get_user_chat_messages(http_session: ClientSession, chatId : str) :
             return []
 
         result = await response.json()
-        # message_list = [
-        #     {
-        #         "name" : await get_manager_name(message["personId"]),
-        #         "text" : message["plainText"]
-        #     }
-        #     for message in result["messages"]
-        #     if message.get("plainText")
-        # ]
         message_list = [
             {
                 "id" : message["id"],
@@ -61,7 +52,7 @@ async def get_user_chat_messages(http_session: ClientSession, chatId : str) :
                 "createdAt" : message["createdAt"]
             }
             for message in result["messages"]
-            if message.get("plainText") and message["personType"] in ("bot", "user", "manager")
+            if message.get("plainText") and message["personType"] in ("bot", "manager")
         ]
         
     return message_list

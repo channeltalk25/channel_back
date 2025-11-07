@@ -43,7 +43,7 @@ class ClusterResult(BaseModel):
 
 **INSTRUCTIONS:**
 
-1.  **질문 텍스트 추출:** 제공된 `QuestionAnswerList`의 각 QuestionAnswer에서 모든 `question_text`를 추출하고, 해당 질문의 `qa_id`와 매핑하세요.
+1.  **질문 텍스트 추출:** 제공된 QuestionAnswerList에서 모든 QuestionAnswer에 대해 `question_text`를 추출하고, 해당 질문의 `qa_id`와 매핑하세요.
 2.  **유사 질문 그룹화 (클러스터링):**
     * **의미적으로 동일하거나, 매우 유사한 의도/주제를 가진 질문**들을 하나의 그룹으로 묶으세요.
     * 질문 내용이 **하나라도 다르면** (예: "블랙프라이데이 일정"과 "배송 지연") **다른 그룹**으로 분류해야 합니다.
@@ -101,11 +101,11 @@ class ClusterResult(BaseModel):
           "qa_id": "fffb4e9e-cbe7-47a1-92ba-838ed06e4f3d",
           "text": "제품 A 재입고일 언제인가요??"
         },
-        {
+                {
           "qa_id": "fffb4e9e-cbe7-47a1-92ba-838ed06e4f3d",
           "text": "A 제품 언제 다시 들어오나요?? 재입고 되는 날 알려주세요"
         },
-        {
+                {
           "qa_id": "fffb4e9e-cbe7-47a1-92ba-838ed06e4f3d",
           "text": "지금 제품 A 다 나갔던데, 언제 재입고 되나요?"
         }
