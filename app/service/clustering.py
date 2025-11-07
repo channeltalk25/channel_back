@@ -1,20 +1,10 @@
-from dataclasses import dataclass, field
-from typing import Optional
-import uuid
-import json
+from schemas.question_answer import QuestionAnswerList, QuestionAnswer
+from schemas.cluster_result import ClusterResult
+from app.service.utils import build_llm_input
+from prompts.loader import CLUSTERER_PROMPT
+from core.llm import llm
 
-@dataclass
-class QuestionAnswer:
-    """질문-답변 쌍"""
-    qa_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    question_id: str = ""
-    question_text: str = ""
-    answer_id: Optional[str] = None
-    answer_text: Optional[str] = None
-    chat_id: Optional[str] = None
-    created_at: Optional[int] = None
-
-def extract_qa_pairs(chat_data: list[dict]) -> list[QuestionAnswer]:
+def extract_qa_pairs(chat_data: list[dict]) -> QuestionAnswerList:
     qa_pairs: list[QuestionAnswer] = []
 
     for chat in chat_data:
@@ -88,4 +78,16 @@ def extract_qa_pairs(chat_data: list[dict]) -> list[QuestionAnswer]:
         # 마지막 남은 쌍 저장
         flush_question_answer()
 
-    return qa_pairs
+    return QuestionAnswerList(qa_list=qa_pairs)
+
+async def get_clusters(chat_data : list[dict]):
+
+    question_answer_list : QuestionAnswerList = extract_qa_pairs(chat_data)
+
+    input = build_llm_input(question_answer_list, CLUSTERER_PROMPT)
+    
+    operator_with_schema = llm.with_structured_output(ClusterResult)
+
+    output = await operator_with_schema.ainvoke(input)
+
+    return output

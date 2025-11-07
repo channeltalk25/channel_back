@@ -3,11 +3,13 @@ from core.http import init_http_session, close_http_session
 from app.api import channel_router, cluster_router, group_router, manager_router, user_chat_router, message_router, threads_router
 import time
 import uvicorn
+from prompts import loader
 
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
+    loader.load_prompts()
     await init_http_session()
 
 @app.on_event("shutdown")
