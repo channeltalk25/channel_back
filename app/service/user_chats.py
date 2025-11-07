@@ -3,7 +3,7 @@ from core.http import get_http_session
 from app.service.managers import get_manager_name
 import asyncio
 
-async def get_user_chatIds(http_session : ClientSession) -> list[str]:
+async def get_user_chatIds(http_session : ClientSession, since: str) -> list[str]:
     """
         열려있는 유저 채팅방들의 chatId 목록 반환
     """
@@ -18,10 +18,15 @@ async def get_user_chatIds(http_session : ClientSession) -> list[str]:
             return []
 
         result = await response.json()
-        chatId_list = [
-            chat_info["chatId"]
-            for chat_info in result["messages"]
+
+        # since 기준 이후(createdAt > since)만 남기기
+        filtered_messages = [
+            chat_info for chat_info in result["messages"]
+            if chat_info.get("createdAt") and int(chat_info["createdAt"]) > int(since)
         ]
+
+        # chatId만 추출
+        chatId_list = [chat_info["chatId"] for chat_info in filtered_messages]
 
     return chatId_list
 
@@ -40,18 +45,28 @@ async def get_user_chat_messages(http_session: ClientSession, chatId : str) :
             return []
 
         result = await response.json()
+        # message_list = [
+        #     {
+        #         "name" : await get_manager_name(message["personId"]),
+        #         "text" : message["plainText"]
+        #     }
+        #     for message in result["messages"]
+        #     if message.get("plainText")
+        # ]
         message_list = [
             {
-                "name" : await get_manager_name(message["personId"]),
-                "text" : message["plainText"]
+                "id" : message["id"],
+                "type" : message["personType"],
+                "text" : message["plainText"],
+                "createdAt" : message["createdAt"]
             }
             for message in result["messages"]
-            if message.get("plainText")
+            if message.get("plainText") and message["personType"] in ("bot", "user", "manager")
         ]
-
+        
     return message_list
 
-async def get_all_user_chat_messages() :
+async def get_all_user_chat_messages(since: str) :
     """
         해당 채널의 모든 유저 대화내역 조회
     """
@@ -61,24 +76,21 @@ async def get_all_user_chat_messages() :
     if http_session is None:
         raise Exception("http session null")
 
-    try:
-        chatIds = await get_user_chatIds(http_session)
+    
+    chatIds = await get_user_chatIds(http_session, since)
 
-        # 모든 메시지 요청을 병렬 실행
-        tasks = [
-            get_user_chat_messages(http_session, chatId)
-            for chatId in chatIds
-        ]
+    # 모든 메시지 요청을 병렬 실행
+    tasks = [
+        get_user_chat_messages(http_session, chatId)
+        for chatId in chatIds
+    ]
 
-        results = await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
 
-        # chatId와 결과를 매핑
-        chat_history = [
-            {"chatId": cid, "messages": msgs}
-            for cid, msgs in zip(chatIds, results)
-        ]
+    # chatId와 결과를 매핑
+    chat_history = [
+        {"chatId": cid, "messages": msgs}
+        for cid, msgs in zip(chatIds, results)
+    ]
 
-        return chat_history
-
-    finally:
-        await http_session.close()
+    return chat_history

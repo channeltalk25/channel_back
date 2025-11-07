@@ -60,3 +60,8 @@ async def get_group_messages_and_threads(groupId : str) :
         ]
 
     return message_list
+
+
+# json spec -> openai
+# 유형별 반환 시키기
+# 카테고리 -> 매핑해서 반환

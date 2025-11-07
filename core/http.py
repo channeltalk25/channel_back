@@ -1,6 +1,6 @@
 from typing import Optional
-import aiohttp
 from dotenv import load_dotenv
+import aiohttp
 import os
 
 load_dotenv()
