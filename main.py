@@ -4,8 +4,16 @@ from app.api import cluster_router, chat_router, recommend_router
 import time
 import uvicorn
 from prompts import loader
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 개발 중에만 사용!
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 async def startup_event():
